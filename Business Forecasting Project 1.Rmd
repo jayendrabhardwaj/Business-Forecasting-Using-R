@@ -1,0 +1,777 @@
+---
+title: "Business Forecasting Mid Term By Jayendra Bhardwaj"
+output:
+  word_document: default
+  html_notebook: default
+  html_document: default
+---
+
+```{r}
+library(readr)
+IPG3113N_Spring18 <- read_csv("/Users/jayendra/Desktop/IPG3113N_Spring18.csv")
+candy_ts <- ts(IPG3113N_Spring18$IPG3113N,frequency = 12,start=c(2003,1))
+head(candy_ts)
+```
+
+
+Plot and Inference
+
+
+Show a time series plot.
+
+
+```{r}
+plot(candy_ts, ylab='Monthly Candy Production', type="o", pch =20)
+```
+
+
+Please summaries your observations of the times series plot.
+
+1. The above time series plot shows the monthly candy production with the strong seasonality.
+2. Since there is no trend, hence it shows some cyclic behaviour.
+
+Central Tendency
+
+What are the min, max, mean, median, 1st and 3rd Quartile values of the times series? 
+
+```{r}
+summary(candy_ts)
+```
+
+
+Show the box plot. 
+
+```{r}
+boxplot(candy_ts ~ cycle(candy_ts))
+```
+
+
+Can you summarize your observation about the time series from the summary stats and box plot? 
+
+Conclusion: 
+
+1. The average monthly candy production is 107.45
+
+2. We can find out the minimum and maximum value of the data points.
+
+3. With the help of 1st and 3rd Quartile we can find out the interQuartile Range.
+
+4. From the summary stat, the mean is greater than median, hence the data points shows 
+little right skewness.
+
+5. Box plot shows the seasonal effect over the time of the candy production. 
+
+6. The production of the candies increasing from 2nd quarter towards 3rd quarter.
+
+Decomposition
+
+Plot the decomposition of the time series.
+
+
+```{r}
+dcmp<- decompose(candy_ts)
+plot(dcmp)
+```
+
+
+Question: Is the times series seasonal?
+
+Conclusion: YES, the time series shows the seasonal effect.
+
+Question: Is the decomposition additive or multiplicative? 
+
+```{r}
+dcmp$type
+```
+
+The decomposition is additive.
+
+
+
+Question:If seasonal, what are the values of the seasonal monthly indices?
+
+
+```{r}
+dcmp$seasonal
+```
+
+
+Question:For which month is the value of time series high and for which month is it low? 
+
+
+```{r}
+library(zoo)
+max_value<-time(as.zoo(dcmp$seasonal))[which.max(dcmp$seasonal)]
+max_value
+```
+
+
+```{r}
+library(zoo)
+min_value<- time(as.zoo(dcmp$seasonal))[which.min(dcmp$seasonal)]
+min_value
+```
+
+High value: November
+
+Low Value: June
+
+
+
+Question:Can you think of the reason behind the value being high in those months and low in those months?
+
+
+High : During the winter, its festive season and most popular for candy is Halloween festival, hence demand is high so the candy production is high.
+
+
+Low: Low production in June summer may be due to the low consumption as people are more focused on fitness and inclined towards less sweet food.
+
+
+Question: Show the plot for time series adjusted for seasonality. Overlay this with the line for actual time series? Does seasonality have big fluctuations to the value of time series? 
+
+```{r}
+library(forecast)
+s<- seasadj(dcmp)
+plot(s)
+```
+
+
+```{r}
+plot(candy_ts)
+lines(s, col = "red")
+```
+
+
+Yes, the seasonality fluctuations are big when compared to the actual values of time series.
+
+
+Naive Method: Output
+
+
+Forecasting for next 12 months using Naive Method
+
+
+```{r}
+library(forecast)
+nv <- naive(candy_ts)
+plot(nv)
+```
+
+
+Perform Residual Analysis for this technique.
+
+Question: Do a plot of residuals. What does the plot indicate?
+
+
+```{r}
+res <- residuals(nv)
+fit <- fitted(nv)
+act <- nv$x
+plot(res, main="Residuals Plot", ylab="", xlab="Time")
+```
+
+
+Conclusion: There is downward unusual spike in 2006 in the residual plot. Similarly there are two upward unusual spikes too, else the variation of the residuals are constant.
+
+Question: Do a Histogram plot of residuals. What does the plot indicate?
+
+
+```{r}
+hist(res, main="Histogram of residuals")
+```
+
+
+Conclusion: The Histogram shows the residuals are normally distributed.
+
+
+Question: Do a plot of fitted values vs. residuals. What does the plot indicate? 
+
+
+```{r}
+library(lattice)
+xyplot(res~fit, pch=16, cex = 1, abline=0)
+
+```
+
+
+Conclusion: The above plot between residuals and fitted values doesn't show any pattern.Therefore there is no heteroscedasticity in the residuals which means the data has equal variation.
+
+
+Question: Do a plot of actual values vs. residuals. What does the plot indicate?
+
+
+```{r}
+library(lattice)
+xyplot(res~act, pch=16, cex = 1, abline=0)
+```
+
+
+Conclusion: The above plot between residuals and actual values doesn't show any pattern. Therefore there is no heteroscedasticity in the residuals which means the data has equal variation.
+
+
+Question: Do an ACF plot of the residuals? What does this plot indicate?
+
+
+```{r}
+Acf(res)
+```
+
+
+Conclusion: 
+
+1. The above Plot shows the autocorrelation of data points for candy production using Naive forecast and shows the seasonal variation for the lags upto 24.
+
+2. The Plot shows the values of ACF from -1 to +1.
+
+3. There are certain spikes which shows the significant values in the positive and negative direction.
+
+4. The seasonal pattern can be observed through the above plot.
+
+
+Question: Print the 5 measures of accuracy for this forecasting technique?
+
+
+```{r}
+accuracy_nv<- accuracy(nv)
+accuracy_nv
+```
+
+
+Forecast
+
+Question: Time series value for next year. Show table and plot?
+
+```{r}
+naive_forecast<- naive(candy_ts, 12 )
+naive_forecast
+plot(naive_forecast)
+```
+
+
+Summarize this forecasting technique
+
+
+```{r}
+summary(nv)
+```
+
+
+Question: How good is the accuracy?
+
+With the help of the RMSE and MPE, we can conclude that the values are not high and the accuracy of the model is good.
+
+
+Question: What does it predict the value of time series will be in one year?
+
+As per the forecast the value is 112.2117.
+
+For example in nov 2018,there is 80% possibility that the value of candy production will vary between 82.13128 and 142.2921.
+
+For example in nov 2018, there is 95% possibility that the value of candy production will vary between 66.20767 and 158.2157.
+
+Question: Other observation
+
+The residuals standard deviation is 7.4432 
+
+
+
+
+Simple Moving Averages
+
+
+Plot the graph for time series.
+
+```{r}
+plot(candy_ts)
+```
+
+
+Question: Show the Simple Moving average of order 3 on the plot above in Red
+
+
+```{r}
+plot(candy_ts)
+ma_forecast<- ma(candy_ts,order=3)
+lines(ma_forecast, col="Red")
+```
+
+
+Question: Show the Simple Moving average of order 6 on the plot above in Blue
+
+```{r}
+plot(candy_ts)
+ma_forecast1<- ma(candy_ts,order=6)
+lines(ma_forecast1, col="blue")
+```
+
+
+Question: Show the Simple Moving average of order 9 on the plot above in Green
+
+
+```{r}
+plot(candy_ts)
+ma_forecast2<- ma(candy_ts,order=9)
+lines(ma_forecast2, col="green")
+```
+
+Combined Plot of order= 3,6,9
+
+```{r}
+ma_forecast <- ma(candy_ts,order=3)
+ma_forecast1 <- ma(candy_ts,order=6)
+ma_forecast2 <- ma(candy_ts,order=9)
+plot(candy_ts, lwd=2)
+lines(ma_forecast,col="Red", lwd=1)
+lines(ma_forecast1,col="Blue", lwd=1)
+lines(ma_forecast2,col="Green", lwd=1)
+```
+
+
+Question: (Bonus) show the forecast of next 12 months using one of the simple average order that you feel works best for time series
+
+Order = 3 best
+
+
+```{r}
+forecast12<- forecast(ma_forecast,h= 12)
+forecast12
+plot(forecast12)
+```
+
+
+Question:What are your observations of the plot as the moving average order goes up? 
+
+As the order increases, the residual factor also increases, hence for the good prediction the value of the order should be minimum.
+
+
+
+
+
+
+Simple Smoothing
+
+
+Perform a simple smoothing forecast for next 12 months for the time series. 
+
+
+```{r}
+library(forecast)
+ets_forecast<-ets(candy_ts)
+ets_forecast
+```
+
+
+Question: What is the value of alpha?  What does that value signify? 
+
+Answer:  alpha: 0.7504, which is pretty high and telling us that the current value depends upon the most recent values of the time series.
+
+
+Question: What is the value of initial state?
+
+```{r}
+ets_forecast$initstate
+```
+
+
+Question: What is the value of sigma?  What does the sigma signify?
+
+
+Answer: sigma:  0.0361 , which means standard deviation of the residuals.
+
+
+Question: Perform Residual Analysis for this technique.
+
+```{r}
+ets_forecast <- ets(candy_ts)
+ets_forecast$residuals
+```
+
+
+Question: Do a plot of residuals. What does the plot indicate?
+
+
+```{r}
+plot(ets_forecast$residuals, main="Residuals", ylab="", xlab="Time")
+```
+
+
+1. The time plot of the residuals shows the variations of the residuals which are almost treated as the constant.
+
+2. There is some upward and downward unusual spike in the residual plot
+
+
+Question:Do a Histogram plot of residuals. What does the plot indicate?
+
+
+```{r}
+hist(ets_forecast$residuals)
+```
+
+
+Conclusion: The Histogram shows the residuals are normally distributed.
+
+
+Question: Do a plot of fitted values vs. residuals. What does the plot indicate?
+
+
+```{r}
+library(lattice)
+xyplot(ets_forecast$residuals ~ ets_forecast$fitted, pch=16, cex = 1, abline=0)
+```
+
+
+Conclusion: The above plot between residuals and fitted values doesn't show any pattern.Therefore there is no heteroscedasticity in the residuals which means the data has equal variation.
+
+
+Question: Do a plot of actual values vs. residuals. What does the plot indicate?
+
+```{r}
+xyplot(ets_forecast$residuals ~ ets_forecast$x, pch = 16, cex = 1, abline = 0)
+
+```
+
+
+Conclusion: The above plot between residuals and fitted values doesn't show any systematic pattern.Therefore there is no heteroscedasticity in the residuals which means the data has equal variation.
+
+
+Question: Do an ACF plot of the residuals? What does this plot indicate?
+
+
+```{r}
+Acf(ets_forecast$residuals)
+
+```
+
+Conclusion: 
+
+1. The above Plot shows the autocorrelation of the data points for candy production using Naive forecast and shows the seasonal variation for the lags upto 24.
+
+2. All the spikes lies between the blue lines and they are highly correlated.
+
+3. The seasonal pattern can be observed through the above plot.
+
+
+Question: Print the 5 measures of accuracy for this forecasting technique
+
+
+```{r}
+accuracy_ets<-accuracy(ets_forecast)
+accuracy_ets
+```
+
+
+Forecast 
+
+Question: Time series value for next year. Show table and plot
+
+
+```{r}
+forecast_ets <- forecast.ets(ets_forecast, h=12)
+forecast_ets
+plot(forecast_ets)
+```
+
+
+
+Question: Summarize this forecasting technique?
+
+```{r}
+summary(forecast_ets)
+```
+
+Question: How good is the accuracy?
+
+The accuarcy is better than the Naive method as the RMSE value is lower i.e 3.961
+
+Question: What does it predict the value of time series will be in one year?
+
+The forecaste value for next year is 110.82761.
+
+For example in nov 2018,there is 80% possibility that the value of candy production will be between 112.72384 and 137.6516
+
+For example in nov 2018, there is 95% possibility that the value of candy production will be between 106.12585 and 144.2496.
+
+
+Question: Other observation
+
+The following values of RMSE, MAE, MPE, MAPE, MASE are low which shows the good accuracy as compared to the Naive Method.
+
+
+Holt-Winters 
+
+Perform Holt-Winters forecast for next 12 months for the time series. 
+```{r}
+library(forecast)
+hw<- HoltWinters(candy_ts)
+hw_forecast<- forecast(hw, h=12)
+hw_forecast
+summary(hw_forecast)
+```
+
+
+Question: What is the value of alpha?  What does that value signify? 
+
+alpha= 0.6058406, which means the estimate value of the data set is based on recent observation.
+
+Question: What is the value of beta? What does that value signify?
+
+beta=0, which means that seasonal remains constant over the time and trend component of the time series is set equal to its intial state and not updated.
+
+Question: What is the value of gamma? What does that value signify?
+
+Gamma: 0.6033215 , means the recent observations are weighted heavily.
+
+
+Question: What is the value of initial states for the level, trend and seasonality? What do these values signify?
+
+
+```{r}
+hw$coefficients
+
+```
+
+
+a,b,s1 contain the initial estimated values for the level, trend and seasonal components respectively.
+
+
+Question: What is the value of sigma?  What does the sigma signify?
+
+```{r}
+sd(complete.cases(hw_forecast$residuals))
+
+```
+
+
+Sigma: 0.249493, standard deviation of the residuals.
+
+
+Question:Perform Residual Analysis for this technique.
+```{r}
+resHW <- residuals(hw_forecast)
+fitHW <- fitted(hw_forecast)
+actHW <- hw_forecast$x
+```
+
+
+Question: Do a plot of residuals. What does the plot indicate?
+
+
+```{r}
+
+plot(resHW, main="Residuals Plot", ylab="", xlab="Time")
+```
+
+
+1. The time plot of the residuals shows the variations of the residuals which are almost treated as the constant.
+
+2. There is some upward and downward unusual spike in the residual plot
+
+Question: Do a Histogram plot of residuals. What does the plot indicate?
+
+```{r}
+hist(resHW)
+
+```
+
+
+Conclusion: The Histogram shows the residuals are normally distributed.
+
+
+Question: Do a plot of fitted values vs. residuals. What does the plot indicate? 
+
+
+```{r}
+xyplot(resHW ~ fitHW, pch=16, cex = 1, abline=0)
+
+```
+
+
+Conclusion: The above plot between residuals and fitted values doesn't show any systematic pattern.Therefore there is no heteroscedasticity in the residuals which means the data has equal variation.
+
+Question: Do a plot of actual values vs. residuals. What does the plot indicate?
+
+```{r}
+xyplot(resHW ~ actHW, pch = 16, cex=1, abline = 0)
+
+```
+
+
+Conclusion: The above plot between residuals and actual values doesn't show any systematic pattern.Therefore there is no heteroscedasticity in the residuals which means the data has equal variation.
+
+
+Question: Do an ACF plot of the residuals? What does this plot indicate?
+
+```{r}
+Acf(resHW, main = "ACF")
+```
+
+
+1. The above Plot shows the autocorrelation between for candy production using Naive forecast and shows the seasonal variation for the lags upto 24.
+
+2. There is one lag at 5 which is significant and towards downward direction.
+
+3. All the spikes lies between the blue lines and they are highly correlated.
+
+4. The seasonal pattern can be observed through the above plot.
+
+
+Question: Print the 5 measures of accuracy for this forecasting technique
+
+```{r}
+accuracy_hw<-accuracy(hw_forecast)
+accuracy_hw
+```
+
+Forecast 
+
+Question: Time series value for next year. Show table and plot
+
+```{r}
+hw_forecast
+plot(hw_forecast)
+```
+
+
+Summarize this forecasting technique
+
+```{r}
+summary(hw_forecast)
+
+```
+
+Question: How good is the accuracy?
+
+The MAE and MAPE values are low which shows the good accuracy of the model but
+values are high as compared to the simple smoothing.Hence the accuarcy is not decent enough as simple smoothing.
+
+Question: What does it predict the value of time series will be in one year?
+
+The forecast value in one year will be 112.42775.
+
+For example in nov 2018,there is 80% possibility that the value of candy production will be between 111.54617 and 135.0448
+
+For example in nov 2018, there is 95% possibility that the value of candy production will be between 105.32647 and 141.2645
+
+
+Question: Other observation
+
+The following values of RMSE, MAE, MPE, MAPE, MASE are low which shows the good accuracy.
+
+
+Accuracy Summary
+Show a table of all the forecast method above with their accuracy measures. 
+
+```{r}
+accuracy_table <- rbind(accuracy_nv,accuracy_ets,accuracy_hw)
+
+rownames(accuracy_table) <- c("Naive Method", "Simple Smoothing", "Holt-Winter")
+
+accuracy_table
+```
+
+Separately define each forecast method and why it is useful. Show the best and worst forecast method for each of the accuracy measures.
+
+Separately define each forecast method and why it is useful.
+
+1 Naive Forecast:
+
+-> Simple model that assumes very recent data provides best predictors of the future.
+
+-> The Naive method could not handle the complex data.
+
+-> It is used only for comparison with the forecasts generated by the better techniques.
+
+
+2 Simple Moving Average:
+
+-> It is the unweighted mean of the previous data and basic time series smoothing method.
+
+-> Applicable when recent observations are better than all observation.
+
+-> Equal weights are assigned to each observation. It does not handle trend or seasonality well, although it does better than simple average method.
+
+-> As the new data is added, the past value is dropped. The most recent observations matters.
+
+
+3 Simple Smoothing:
+
+-> When forecaster believes more-recent observations are likely to contain more information, this is the technique to use which means that it works on most recent observations.
+
+-> It is more appropriate for data with no predictable upward or downward trend.
+
+-> The main aim is to estimate the current level. The level estimate is then used to forecast future values and helps in forecasting short term trends.
+
+
+
+4 Holt Winters:
+
+-> It is also Known as Triple Exponential Smoothing.
+
+-> Worked on additive method and multiplicative method.
+
+-> It comprises of 3 component i.e. level, trend and seasonality.
+
+
+
+
+
+Summary of Accuracy Parameters
+
+
+-> ME: Mean Error : -0.187380106 - lowest -> Naive Method
+
+-> RMSE: Root Mean Squared Error: 3.961930 -> lowest -> Simple Smoothing
+
+-> MAE: Mean Absolute Error: 2.971197 -> lowest -> Simple Smoothing
+
+-> MPE: Mean Percentage Error: -0.2713261 -> closest to zero -> Holts Winter
+
+-> MAPE: Mean Absolute Percentage Error: 2.749518 -> lowest -> Simple Smoothing
+
+-> MASE: Mean Absolute Scaled Error: 0.4899657 -> lowest -> Simple Smoothing
+
+-> ACF1: Autocorrelation of errors at lag 1: 0.0011844 -> lowest -> Simple Smoothing
+
+
+
+Conclusion
+
+Summarize your analysis of time series value over the time-period. 
+
+Question: Based on your analysis and forecast above, do you think the value of the time series will increase, decrease or stay flat over the next year? How about next 2 years?
+
+Based on the analysis, the candy production will increase in the 3rd Quarter during winters time and production will decrease during the summer times in the following year. The same will be followed in the upcoming years.
+
+
+Upcoming Next 2 years forecast:
+
+
+```{r}
+naive_forecast <- naive(candy_ts, 24)
+plot(naive_forecast)
+
+ma_forecast <- ma(candy_ts,order=1)
+forecast_ma <- forecast(ma_forecast,h=24)
+plot(forecast_ma)
+
+candy_HW <- HoltWinters(candy_ts)
+hw_forecast<- forecast(candy_HW, h=12)
+plot(hw_forecast)
+
+```
+
+
+```{r}
+forecast_ma
+```
+
+
+Rank forecasting methods that best forecast for this time series based on historical values.
+
+Following are the Forecasting Method Ranks:
+
+1. Simple Smoothing (ETS)
+
+2. Holt-Winter
+
+3. Naive Method
