@@ -1,0 +1,73 @@
+---
+title: "BF Assignment 4"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+
+```{r}
+data("austres")
+class(austres)
+data.ts <- austres
+summary(data.ts)
+head(data.ts)
+data <- ts(austres,start=c(1971), frequency = 12)
+```
+
+```{r}
+plot.ts(data)
+```
+
+
+The plot shows the increasing trend in the number of residents of Australia.
+
+
+```{r}
+ets_pred <- ets(data)
+ets_pred
+```
+
+We can see that alpha = 6e-04 which means that prediction is done through average of whole dataset instead of through the resent value.
+
+ETS(M,A,N) - 
+
+
+Error type-"M"= Multiplicative,
+
+
+Tread-None- "A"= Additive
+
+
+Seasonality- None
+
+```{r}
+plot(ets_pred)
+ets_pred$mse
+```
+
+
+Mean square error for the above forecast:  99.28186
+
+Forecast:
+Numbers (in thousands) of Australian residents measured quarterly from Jun 1978 to May 1979.
+
+```{r}
+forecast.ets(ets_pred, h=12)
+```
+
+
+
+Using function forecast ets() we can predict the lowest and highest value of  80% and 95% prediction interval of particular time interval.
+
+
+```{r}
+pred_ets <- forecast.ets(ets_pred, h=12)
+plot(pred_ets)
+```
+
+
+In continuation of the above function forecast ets() , we can plot using function plot(pred_ets):
+Forecasts for Jun(1978)-May(1979) marked as a Blue Line, for Dark Grey shaded area depicting 80% prediction, and for Light Grey shaded area depicting the 95% prediction interval.
+
+
