@@ -1,0 +1,131 @@
+---
+title: "BF Assignment 5"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+
+```{r}
+data("AirPassengers")
+class(AirPassengers)
+AirPassengers
+```
+
+
+
+AirPassengers	Monthly Airline Passenger Numbers 1949-1960.
+
+
+```{r}
+plot.ts(AirPassengers)
+```
+
+
+We can check from the above Graph, the seasonal variations in the number of passengers per month.
+
+
+```{r}
+acf(AirPassengers, lag.max= 20)
+```
+
+
+From the above ACF graph we can see that all the lags are above the significant bound.
+
+
+```{r}
+stl_decomp <- stl(AirPassengers,s.window ="periodic")
+stl_decomp
+```
+
+
+```{r}
+plot(stl_decomp)
+```
+
+
+Plot Depiction: Top to bottom
+
+
+Row1(Obeserved): Original Time series
+
+
+Row2(trend): Trend component of time series and its increasing over the time.
+
+
+Row3(seasonal): Seasonal variations in the time series
+
+
+Row4(random): irregular or random component.
+
+
+```{r}
+attributes(stl_decomp)
+```
+
+
+
+```{r}
+library(forecast)
+stl_decomp_adj<-seasadj(stl_decomp)
+stl_decomp_adj
+plot(stl_decomp_adj)
+lines(seasadj(stl_decomp))
+```
+
+
+By using the seasadj function, we have removed the seasonal component from the time series.
+
+
+```{r}
+f_stl <- forecast(stl_decomp,h=15)
+f_stl
+```
+
+
+By using the forecast function, we are predicting the next 15 months from Jan 1961 to Mar 1962 with 80% and 95% confidence interval. For Mar 1962 we have range of(331.9300,589.4928) with 95% confidence.
+
+
+```{r}
+plot(f_stl)
+```
+
+
+Plot of forecast function, depicting 80% confidence( Dark Gray line) and 95% confidence(Light gray line).
+
+Alternative Way:
+
+
+```{r}
+air_decompose<-decompose(AirPassengers)
+air_decompose
+attributes(air_decompose)
+seasadj(air_decompose)
+```
+
+
+By using decompose function, we can see the time series components: Seasonal, Trend and Random.
+
+
+```{r}
+plot(air_decompose)
+```
+
+
+Plot Depiction: Top to bottom
+
+
+Row1(Obeserved): Original Time series
+
+
+Row2(trend): Trend component of time series and its increasing over the time.
+
+
+Row3(seasonal): Seasonal variations in the time series
+
+
+Row4(random): irregular or random component.
+
+
+
+
